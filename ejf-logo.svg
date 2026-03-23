@@ -1,0 +1,124 @@
+<svg width="680" height="420" viewBox="0 0 680 420" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#f5d060"/>
+    <stop offset="50%" stop-color="#c9a84c"/>
+    <stop offset="100%" stop-color="#9a7a28"/>
+  </linearGradient>
+  <linearGradient id="goldh" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0%" stop-color="#9a7a28"/>
+    <stop offset="40%" stop-color="#f5d060"/>
+    <stop offset="100%" stop-color="#9a7a28"/>
+  </linearGradient>
+  <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#1a3a5c"/>
+    <stop offset="100%" stop-color="#0a1828"/>
+  </linearGradient>
+  <linearGradient id="shine" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#ffffff" stop-opacity="0.18"/>
+    <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+  </linearGradient>
+</defs>
+
+<!-- Background plate -->
+<rect x="60" y="20" width="560" height="380" rx="18" fill="#0a0e18"/>
+<rect x="60" y="20" width="560" height="380" rx="18" fill="none" stroke="url(#gold)" stroke-width="1.5"/>
+<rect x="68" y="28" width="544" height="364" rx="14" fill="none" stroke="#c9a84c" stroke-width="0.5" opacity="0.35"/>
+
+<!-- Ground reflection -->
+<ellipse cx="340" cy="258" rx="175" ry="10" fill="#c9a84c" opacity="0.08"/>
+
+<!-- Car body -->
+<path d="M155 248 L160 210 Q168 185 195 176 L250 168 L295 162 Q330 158 370 158 L430 160 L470 165 Q500 172 514 192 L530 218 L535 248 Z" fill="url(#body)"/>
+
+<!-- Roof -->
+<path d="M255 168 Q265 148 285 142 L395 139 Q418 142 428 155 L450 168 Z" fill="#142a44"/>
+<path d="M272 162 Q290 150 310 145 L390 143 Q410 147 425 160 Z" fill="url(#shine)"/>
+
+<!-- Windows -->
+<path d="M259 168 L255 188 L318 188 L322 164 Z" fill="#a8d4f5" opacity="0.55"/>
+<path d="M326 163 L322 188 L388 188 L394 161 Z" fill="#a8d4f5" opacity="0.55"/>
+<path d="M397 161 L393 188 L438 190 L445 174 Z" fill="#a8d4f5" opacity="0.5"/>
+<path d="M448 175 L442 190 L483 194 L490 185 Z" fill="#a8d4f5" opacity="0.45"/>
+
+<!-- Window trim -->
+<path d="M260 168 L486 178" stroke="#c9a84c" stroke-width="1.5" fill="none"/>
+<path d="M260 188 L486 196" stroke="#0d2035" stroke-width="1" fill="none"/>
+
+<!-- Door lines -->
+<line x1="326" y1="163" x2="322" y2="248" stroke="#0d2035" stroke-width="1.5"/>
+<line x1="397" y1="161" x2="393" y2="248" stroke="#0d2035" stroke-width="1.5"/>
+<line x1="448" y1="174" x2="442" y2="248" stroke="#0d2035" stroke-width="1.5"/>
+
+<!-- Chrome strip -->
+<rect x="155" y="228" width="380" height="4" rx="2" fill="url(#goldh)" opacity="0.45"/>
+
+<!-- Front fascia -->
+<path d="M514 192 L530 218 L535 248 L510 248 L505 220 L498 196 Z" fill="#0d2035"/>
+<path d="M500 196 L520 210 L522 226 L500 223 Z" fill="#e8f4ff" opacity="0.88"/>
+<line x1="500" y1="200" x2="520" y2="202" stroke="#e8f4ff" stroke-width="1.5" opacity="0.7"/>
+<line x1="500" y1="206" x2="520" y2="208" stroke="#e8f4ff" stroke-width="1.5" opacity="0.6"/>
+<line x1="500" y1="212" x2="520" y2="214" stroke="#e8f4ff" stroke-width="1.5" opacity="0.5"/>
+
+<!-- Rear -->
+<path d="M155 248 L160 210 L182 213 L180 246 Z" fill="#0d2035"/>
+<rect x="157" y="213" width="8" height="32" rx="2" fill="#cc2200" opacity="0.85"/>
+
+<!-- Front wheel -->
+<circle cx="218" cy="251" r="36" fill="#080c14"/>
+<circle cx="218" cy="251" r="32" fill="#111820"/>
+<circle cx="218" cy="251" r="26" fill="#0a0e18"/>
+<circle cx="218" cy="251" r="14" fill="#1a2030"/>
+<circle cx="218" cy="251" r="7"  fill="url(#gold)" opacity="0.9"/>
+<line x1="218" y1="219" x2="218" y2="235" stroke="#c9a84c" stroke-width="3.5"/>
+<line x1="218" y1="267" x2="218" y2="283" stroke="#c9a84c" stroke-width="3.5"/>
+<line x1="186" y1="251" x2="202" y2="251" stroke="#c9a84c" stroke-width="3.5"/>
+<line x1="234" y1="251" x2="250" y2="251" stroke="#c9a84c" stroke-width="3.5"/>
+<line x1="196" y1="229" x2="207" y2="240" stroke="#c9a84c" stroke-width="3"/>
+<line x1="229" y1="262" x2="240" y2="273" stroke="#c9a84c" stroke-width="3"/>
+<line x1="196" y1="273" x2="207" y2="262" stroke="#c9a84c" stroke-width="3"/>
+<line x1="229" y1="240" x2="240" y2="229" stroke="#c9a84c" stroke-width="3"/>
+
+<!-- Rear wheel -->
+<circle cx="462" cy="251" r="36" fill="#080c14"/>
+<circle cx="462" cy="251" r="32" fill="#111820"/>
+<circle cx="462" cy="251" r="26" fill="#0a0e18"/>
+<circle cx="462" cy="251" r="14" fill="#1a2030"/>
+<circle cx="462" cy="251" r="7"  fill="url(#gold)" opacity="0.9"/>
+<line x1="462" y1="219" x2="462" y2="235" stroke="#c9a84c" stroke-width="3.5"/>
+<line x1="462" y1="267" x2="462" y2="283" stroke="#c9a84c" stroke-width="3.5"/>
+<line x1="430" y1="251" x2="446" y2="251" stroke="#c9a84c" stroke-width="3.5"/>
+<line x1="478" y1="251" x2="494" y2="251" stroke="#c9a84c" stroke-width="3.5"/>
+<line x1="440" y1="229" x2="451" y2="240" stroke="#c9a84c" stroke-width="3"/>
+<line x1="473" y1="262" x2="484" y2="273" stroke="#c9a84c" stroke-width="3"/>
+<line x1="440" y1="273" x2="451" y2="262" stroke="#c9a84c" stroke-width="3"/>
+<line x1="473" y1="240" x2="484" y2="229" stroke="#c9a84c" stroke-width="3"/>
+
+<!-- Ground line -->
+<line x1="130" y1="284" x2="550" y2="284" stroke="url(#goldh)" stroke-width="0.8" opacity="0.4"/>
+
+<!-- Water droplet emblem -->
+<path d="M340 58 Q352 70 356 82 Q360 95 350 104 Q341 111 331 104 Q321 95 325 82 Q329 70 340 58 Z" fill="url(#gold)"/>
+<path d="M340 66 Q348 76 351 86 Q347 78 341 75 Z" fill="#ffffff" opacity="0.22"/>
+
+<!-- EJF letters -->
+<text x="340" y="318" text-anchor="middle" font-family="Georgia, serif" font-size="62" font-weight="700" letter-spacing="14" fill="url(#gold)">EJF</text>
+
+<!-- Divider lines -->
+<line x1="112" y1="336" x2="222" y2="336" stroke="url(#goldh)" stroke-width="0.8"/>
+<line x1="458" y1="336" x2="568" y2="336" stroke="url(#goldh)" stroke-width="0.8"/>
+<circle cx="112" cy="336" r="2" fill="#c9a84c" opacity="0.6"/>
+<circle cx="568" cy="336" r="2" fill="#c9a84c" opacity="0.6"/>
+
+<!-- MOBILE DETAILING -->
+<text x="340" y="344" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="400" letter-spacing="6" fill="#c9a84c" opacity="0.85">MOBILE DETAILING</text>
+
+<!-- CHICAGO, IL -->
+<text x="340" y="372" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="400" letter-spacing="4" fill="#c9a84c" opacity="0.45">CHICAGO, IL</text>
+
+<!-- Corner ornaments -->
+<path d="M80 40 L80 55 M80 40 L95 40" stroke="#c9a84c" stroke-width="1" fill="none" opacity="0.5"/>
+<path d="M600 40 L600 55 M600 40 L585 40" stroke="#c9a84c" stroke-width="1" fill="none" opacity="0.5"/>
+<path d="M80 380 L80 365 M80 380 L95 380" stroke="#c9a84c" stroke-width="1" fill="none" opacity="0.5"/>
+<path d="M600 380 L600 365 M600 380 L585 380" stroke="#c9a84c" stroke-width="1" fill="none" opacity="0.5"/>
+</svg>
