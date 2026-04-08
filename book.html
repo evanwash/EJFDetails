@@ -600,44 +600,9 @@ button:focus:not(:focus-visible), a:focus:not(:focus-visible) { outline: none; }
  </div>
  <div class="booking-success" id="booking-success">
   <div class="check">🎉</div>
-  <h3>Thanks for choosing EJF!</h3>
+  <h3>Thank You for Booking with EJF!</h3>
   <p>Your booking request is in — we'll text you shortly to confirm your appointment details.</p>
-
-  <div style="margin-top:28px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:24px 20px;text-align:left;">
-    <p style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.04em;color:var(--white);margin-bottom:6px;">💳 Payment — Due After the Job</p>
-    <p style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:20px;">No payment needed now. We collect after the detail is complete — pick whatever's easiest.</p>
-
-    <div class="pay-cta-grid" style="margin-top:0;">
-
-      <div class="pay-cta-card" onclick="copyZelleBook(this)" style="cursor:pointer;">
-        <div class="pay-cta-logo" style="background:#6d1ed4;color:#fff;">Z</div>
-        <div class="pay-cta-info">
-          <div class="pay-cta-name">Zelle</div>
-          <div class="pay-cta-handle" id="zelle-book-handle">708-573-5490</div>
-        </div>
-        <div class="pay-cta-arrow" id="zelle-book-arrow">Tap to Copy →</div>
-      </div>
-
-      <a class="pay-cta-card" href="https://cash.app/$EWash52" target="_blank" rel="noopener">
-        <div class="pay-cta-logo" style="background:#00d632;color:#000;">$</div>
-        <div class="pay-cta-info">
-          <div class="pay-cta-name">CashApp</div>
-          <div class="pay-cta-handle">$EWash52</div>
-        </div>
-        <div class="pay-cta-arrow">Tap to Pay →</div>
-      </a>
-
-    </div>
-
-    <div class="pay-also-accept" style="margin-top:18px;">
-      <span class="pay-also-label" style="font-size:12px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.06em;">Also accepted:</span>
-      <span class="pay-also-chip" style="background:rgba(255,255,255,.07);border-radius:50px;padding:5px 14px;font-size:13px;">💵 Cash</span>
-      <span class="pay-also-chip" style="background:rgba(255,255,255,.07);border-radius:50px;padding:5px 14px;font-size:13px;">🍎 Apple Pay</span>
-      <span class="pay-also-chip" style="background:rgba(255,255,255,.07);border-radius:50px;padding:5px 14px;font-size:13px;">🔵 Google Pay</span>
-    </div>
-  </div>
-
-  <p style="font-size:13px;color:rgba(255,255,255,.35);margin-top:20px;">Questions? Text <strong style="color:var(--red)">708-573-5490</strong></p>
+  <a href="index.html" class="btn-book" style="display:inline-block;margin-top:28px;max-width:280px;text-decoration:none;text-align:center;">← Back to Home</a>
  </div>
  </div>
 </section>
@@ -768,7 +733,7 @@ function submitBooking() {
   '_captcha': 'false',
  };
 
- fetch('https://formsubmit.co/ajax/evanwash@EJFDetailing.com', {
+ fetch('https://formsubmit.co/ajax/evanwashington097@gmail.com', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
   body: JSON.stringify(formData)
