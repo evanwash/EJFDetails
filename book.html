@@ -690,25 +690,7 @@ reveals.forEach(r => observer.observe(r));
 </script>
 
 <script>
-// Pre-fill from URL params (coming from Plans page)
-const params = new URLSearchParams(window.location.search);
-if (params.get('package')) {
- const pkgSelect = document.getElementById('package');
- // Add as custom option if it doesn't exist
- const val = params.get('package');
- const opt = document.createElement('option');
- opt.value = val;
- opt.textContent = val;
- opt.selected = true;
- pkgSelect.appendChild(opt);
-}
-if (params.get('vehicle')) {
- const vehSelect = document.getElementById('vehicle');
- const val = params.get('vehicle');
- for (let o of vehSelect.options) {
-  if (o.textContent.startsWith(val) || o.value === val) { o.selected = true; break; }
- }
-}
+// URL param pre-fill is handled by the dedicated script block below.
 
 function copyZelleBook(card) {
  const arrow = document.getElementById('zelle-book-arrow');
@@ -818,24 +800,36 @@ dateInput.setAttribute('min', new Date().toISOString().split('T')[0]);
 (function() {
   const params = new URLSearchParams(window.location.search);
   const vehicle = params.get('vehicle');
-  const pkg = params.get('pkg');
+  const pkg = params.get('pkg') || params.get('package');
   if (!vehicle && !pkg) return;
 
   window.addEventListener('DOMContentLoaded', function() {
     if (vehicle) {
       const vSel = document.getElementById('vehicle');
+      let found = false;
       for (let i = 0; i < vSel.options.length; i++) {
         if (vSel.options[i].text === vehicle || vSel.options[i].value === vehicle) {
-          vSel.selectedIndex = i; break;
+          vSel.selectedIndex = i; found = true; break;
         }
+      }
+      if (!found) {
+        const opt = document.createElement('option');
+        opt.value = vehicle; opt.textContent = vehicle; opt.selected = true;
+        vSel.appendChild(opt);
       }
     }
     if (pkg) {
       const pSel = document.getElementById('package');
+      let found = false;
       for (let i = 0; i < pSel.options.length; i++) {
         if (pSel.options[i].text === pkg || pSel.options[i].value === pkg) {
-          pSel.selectedIndex = i; break;
+          pSel.selectedIndex = i; found = true; break;
         }
+      }
+      if (!found) {
+        const opt = document.createElement('option');
+        opt.value = pkg; opt.textContent = pkg; opt.selected = true;
+        pSel.appendChild(opt);
       }
     }
     // Scroll to booking form
