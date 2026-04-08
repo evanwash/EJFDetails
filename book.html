@@ -965,6 +965,8 @@ function renderCal() {
   });
 
   const today    = new Date(); today.setHours(0,0,0,0);
+  // No same-day bookings — earliest bookable date is tomorrow
+  const minBookable = new Date(today); minBookable.setDate(minBookable.getDate() + 1);
   const firstDay = new Date(calYear, calMonth, 1).getDay();
   const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
 
@@ -978,7 +980,7 @@ function renderCal() {
     const date = new Date(calYear, calMonth, d);
     const cell = document.createElement('div');
     const iso  = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const past = date < today;
+    const past = date < minBookable;
     const off  = DAYS_OFF.includes(date.getDay());
     const blocked = blockedDates.has(iso);
     const unavailable = past || off || blocked;
