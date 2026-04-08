@@ -856,12 +856,12 @@ const STORAGE_KEY = 'ejf_blocked_dates_v1';
 // Fill in these values from your Firebase project (see setup instructions).
 // Until apiKey is filled in, the calendar falls back to localStorage (per-device).
 const FIREBASE_CONFIG = {
-  apiKey: "",
-  authDomain: "",
-  projectId: "",
-  storageBucket: "",
-  messagingSenderId: "",
-  appId: ""
+  apiKey: "AIzaSyB8JfRKPVyjf9hY2EjOqQc54V0F1GTEYJk",
+  authDomain: "ejf-details.firebaseapp.com",
+  projectId: "ejf-details",
+  storageBucket: "ejf-details.firebasestorage.app",
+  messagingSenderId: "20463039135",
+  appId: "1:20463039135:web:32fb0c14a254a434fd68aa"
 };
 
 // Admin mode: visit book.html?admin=ejf to manage blocked dates
@@ -965,8 +965,6 @@ function renderCal() {
   });
 
   const today    = new Date(); today.setHours(0,0,0,0);
-  // No same-day bookings — earliest bookable date is tomorrow
-  const minBookable = new Date(today); minBookable.setDate(minBookable.getDate() + 1);
   const firstDay = new Date(calYear, calMonth, 1).getDay();
   const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
 
@@ -980,7 +978,7 @@ function renderCal() {
     const date = new Date(calYear, calMonth, d);
     const cell = document.createElement('div');
     const iso  = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const past = date < minBookable;
+    const past = date < today;
     const off  = DAYS_OFF.includes(date.getDay());
     const blocked = blockedDates.has(iso);
     const unavailable = past || off || blocked;
