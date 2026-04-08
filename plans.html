@@ -143,10 +143,6 @@ h2 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(38px, 6vw, 64px); l
 .pricing-note { margin-top: 18px; font-size: 13px; color: var(--gray); font-style: italic; display: flex; align-items: center; gap: 8px; }
 .pricing-note::before { content: "✦"; color: var(--red); font-style: normal; }
 
-.deposit-notice { margin-top: 24px; background: linear-gradient(135deg, rgba(227,30,36,.08), rgba(227,30,36,.02)); border: 1px solid rgba(227,30,36,.35); border-radius: 12px; padding: 20px 24px; display: flex; align-items: flex-start; gap: 16px; }
-.deposit-icon { font-size: 28px; flex-shrink: 0; margin-top: 2px; }
-.deposit-notice h4 { font-size: 15px; font-weight: 700; color: var(--red); margin-bottom: 5px; }
-.deposit-notice p { font-size: 13px; color: rgba(255,255,255,.6); line-height: 1.6; }
 
 .tiers { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); gap: 20px; }
 .tier-card { border-radius: 16px; padding: 30px; position: relative; overflow: hidden; transition: transform .3s, box-shadow .3s; }
@@ -237,9 +233,6 @@ h2 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(38px, 6vw, 64px); l
 .form-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 @media(max-width:560px){ .form-row2 { grid-template-columns: 1fr; } }
 .form-group textarea { min-height: 90px; resize: vertical; }
-.deposit-box { background: linear-gradient(135deg, rgba(227,30,36,.1), rgba(227,30,36,.04)); border: 1px solid rgba(227,30,36,.3); border-radius: 12px; padding: 16px 20px; margin-bottom: 22px; display: flex; align-items: flex-start; gap: 14px; }
-.deposit-box p { font-size: 13px; color: rgba(255,255,255,.65); line-height: 1.5; }
-.deposit-box strong { color: var(--red); }
 .btn-book { width: 100%; padding: 16px; background: var(--white); color: var(--red); font-family: 'DM Sans', sans-serif; font-weight: 800; font-size: 15px; letter-spacing: .06em; text-transform: uppercase; border: none; border-radius: 10px; cursor: pointer; transition: background .2s, transform .15s; }
 .btn-book:hover { background: #fff; transform: translateY(-2px); }
 .booking-note { text-align: center; font-size: 12px; color: var(--gray); margin-top: 14px; }
@@ -402,7 +395,6 @@ button:focus:not(:focus-visible), a:focus:not(:focus-visible) { outline: none; }
  .float-cta { bottom: 18px; right: 18px; padding: 12px 18px; font-size: 13px; }
  h2 { margin-bottom: 24px; }
  .header-phone { font-size: 20px; }
- .deposit-notice { flex-direction: column; gap: 10px; padding: 16px; }
 }
 
 /* Smooth transition for nav background */
