@@ -434,7 +434,40 @@ button:focus:not(:focus-visible), a:focus:not(:focus-visible) { outline: none; }
 .footer-social a { display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,.08); color: rgba(255,255,255,.5); text-decoration: none; font-size: 14px; transition: background .2s, color .2s; }
 .footer-social a:hover { background: var(--red); color: #fff; }
 @media(max-width:600px){ .footer-social { justify-content: center; } }
+
+/* ── Calendar Picker ─────────────────────────────────────── */
+.cal-wrap { margin-bottom: 18px; }
+.cal-label { display: block; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--gray); margin-bottom: 7px; }
+.cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.cal-month-name { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: .04em; color: var(--white); }
+.cal-nav { background: none; border: 1px solid rgba(255,255,255,.15); color: var(--white); width: 34px; height: 34px; border-radius: 8px; cursor: pointer; font-size: 16px; transition: border-color .2s, background .2s; display: flex; align-items: center; justify-content: center; }
+.cal-nav:hover { border-color: var(--red); background: rgba(227,30,36,.1); }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+.cal-dow { text-align: center; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: rgba(255,255,255,.35); padding-bottom: 6px; }
+.cal-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; border: 1px solid transparent; transition: all .15s; background: rgba(255,255,255,.04); color: rgba(255,255,255,.7); }
+.cal-day:hover:not(.cal-day-disabled):not(.cal-day-empty) { border-color: var(--red); color: var(--white); background: rgba(227,30,36,.12); }
+.cal-day-selected { background: var(--red) !important; color: #fff !important; border-color: var(--red) !important; font-weight: 700; }
+.cal-day-today { border-color: rgba(255,255,255,.3); color: var(--white); }
+.cal-day-disabled { opacity: .22; cursor: not-allowed; background: none; }
+.cal-day-empty { background: none; cursor: default; border: none; }
+.cal-selected-display { margin-top: 8px; font-size: 13px; color: var(--red); font-weight: 600; min-height: 18px; }
+/* Hidden real input */
+#date { display: none; }
+/* Time slots */
+.time-slots { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 4px; }
+@media(max-width:420px){ .time-slots { grid-template-columns: 1fr 1fr; } }
+.time-slot { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.12); border-radius: 10px; padding: 12px 10px; text-align: center; cursor: pointer; transition: all .15s; }
+.time-slot:hover { border-color: var(--red); background: rgba(227,30,36,.08); }
+.time-slot-selected { border-color: var(--red) !important; background: rgba(227,30,36,.18) !important; color: var(--white); }
+.time-slot-label { font-size: 13px; font-weight: 700; color: var(--white); }
+.time-slot-sub { font-size: 11px; color: rgba(255,255,255,.45); margin-top: 2px; }
+#time { display: none; }
+.cal-wrap.invalid-cal .cal-selected-display { color: #e74c3c; }
+
 </style>
+<!-- Firebase (for live calendar sync across devices) -->
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
@@ -519,22 +552,48 @@ button:focus:not(:focus-visible), a:focus:not(:focus-visible) { outline: none; }
  </select>
  </div>
  </div>
- <div class="form-row2">
- <div class="form-group"><label>Preferred Date</label><input type="date" id="date"></div>
- <div class="form-group">
- <label>Preferred Time</label>
- <select id="time">
- <option value="">Select time...</option>
- <option>Morning (8am–11am)</option>
- <option>Midday (11am–2pm)</option>
- <option>Afternoon (2pm–5pm)</option>
- <option>Evening (5pm–7pm)</option>
- </select>
- </div>
- </div>
+ <div class="form-row2" style="grid-template-columns:1fr;">
+
+      <!-- Calendar Picker -->
+      <div class="cal-wrap" id="cal-wrap">
+        <span class="cal-label">Preferred Date</span>
+        <div class="cal-header">
+          <button class="cal-nav" type="button" onclick="calNav(-1)">&#8592;</button>
+          <div class="cal-month-name" id="cal-month-name"></div>
+          <button class="cal-nav" type="button" onclick="calNav(1)">&#8594;</button>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+        <div class="cal-selected-display" id="cal-selected-display">Select a date</div>
+        <input type="hidden" id="date">
+      </div>
+
+      <!-- Time Slots -->
+      <div class="form-group">
+        <label>Preferred Time</label>
+        <div class="time-slots" id="time-slots">
+          <div class="time-slot" onclick="selectTime(this,'Morning (8am–11am)')">
+            <div class="time-slot-label">🌅 Morning</div>
+            <div class="time-slot-sub">8am – 11am</div>
+          </div>
+          <div class="time-slot" onclick="selectTime(this,'Midday (11am–2pm)')">
+            <div class="time-slot-label">☀️ Midday</div>
+            <div class="time-slot-sub">11am – 2pm</div>
+          </div>
+          <div class="time-slot" onclick="selectTime(this,'Afternoon (2pm–5pm)')">
+            <div class="time-slot-label">🌤 Afternoon</div>
+            <div class="time-slot-sub">2pm – 5pm</div>
+          </div>
+          <div class="time-slot" onclick="selectTime(this,'Evening (5pm–7pm)')">
+            <div class="time-slot-label">🌇 Evening</div>
+            <div class="time-slot-sub">5pm – 7pm</div>
+          </div>
+        </div>
+        <input type="hidden" id="time">
+      </div>
+
+     </div>
  <div class="form-group"><label>Your Address / Location</label><input type="text" id="address" autocomplete="street-address" placeholder="We come to you — enter your address"></div>
  <div class="form-group"><label>Anything else we should know?</label><textarea id="notes" placeholder="Pet hair, heavy stains, special requests..."></textarea></div>
- <p><strong>Step 1:</strong> Fill out this form. <strong>Step 2:</strong> Send your <strong style="color:var(--red)">$25 deposit</strong> instantly via <a href="pay.html" style="color:var(--red);text-decoration:underline">CashApp, Venmo, Zelle, or PayPal</a> — your spot is locked the moment we receive it.</p>
  </div>
  <button class="btn-book" onclick="submitBooking()">Confirm Booking →</button>
  <p class="booking-note">We'll text you to confirm your appointment.</p>
@@ -670,7 +729,7 @@ function submitBooking() {
   { el: document.getElementById('phone'), name: 'Phone number' },
   { el: document.getElementById('vehicle'), name: 'Vehicle type' },
   { el: document.getElementById('package'), name: 'Package' },
-  { el: document.getElementById('date'), name: 'Preferred date' },
+  { el: document.getElementById('date'), name: 'Preferred date', isHidden: true },
   { el: document.getElementById('address'), name: 'Address' },
  ];
  let valid = true;
@@ -697,6 +756,7 @@ function submitBooking() {
     if (err) err.remove();
     this.removeEventListener('change', handler);
    });
+   }
   }
  });
  if (!valid) {
@@ -753,6 +813,235 @@ function submitBooking() {
 
 const dateInput = document.getElementById('date');
 dateInput.setAttribute('min', new Date().toISOString().split('T')[0]);
+</script>
+
+<script>
+(function() {
+  const params = new URLSearchParams(window.location.search);
+  const vehicle = params.get('vehicle');
+  const pkg = params.get('pkg');
+  if (!vehicle && !pkg) return;
+
+  window.addEventListener('DOMContentLoaded', function() {
+    if (vehicle) {
+      const vSel = document.getElementById('vehicle');
+      for (let i = 0; i < vSel.options.length; i++) {
+        if (vSel.options[i].text === vehicle || vSel.options[i].value === vehicle) {
+          vSel.selectedIndex = i; break;
+        }
+      }
+    }
+    if (pkg) {
+      const pSel = document.getElementById('package');
+      for (let i = 0; i < pSel.options.length; i++) {
+        if (pSel.options[i].text === pkg || pSel.options[i].value === pkg) {
+          pSel.selectedIndex = i; break;
+        }
+      }
+    }
+    // Scroll to booking form
+    const form = document.querySelector('.booking-wrap') || document.querySelector('section');
+    if (form) form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+})();
+</script>
+
+<script>
+// ── Calendar ──────────────────────────────────────────────────────────────────
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DAYS_OFF = [0]; // 0 = Sunday closed; add 6 for Saturday closed etc.
+const STORAGE_KEY = 'ejf_blocked_dates_v1';
+
+// ── Firebase config ───────────────────────────────────────────────────────────
+// Fill in these values from your Firebase project (see setup instructions).
+// Until apiKey is filled in, the calendar falls back to localStorage (per-device).
+const FIREBASE_CONFIG = {
+  apiKey: "",
+  authDomain: "",
+  projectId: "",
+  storageBucket: "",
+  messagingSenderId: "",
+  appId: ""
+};
+
+// Admin mode: visit book.html?admin=ejf to manage blocked dates
+const ADMIN_MODE = new URLSearchParams(window.location.search).get('admin') === 'ejf';
+
+let calYear, calMonth, calSelected = null;
+let blockedDates = new Set();
+let firestoreDoc = null; // Firestore doc ref if connected
+let useFirebase = false;
+
+// ── Storage layer ─────────────────────────────────────────────────────────────
+function initStorage() {
+  if (FIREBASE_CONFIG.apiKey && typeof firebase !== 'undefined') {
+    try {
+      firebase.initializeApp(FIREBASE_CONFIG);
+      const db = firebase.firestore();
+      firestoreDoc = db.collection('availability').doc('blocked');
+      useFirebase = true;
+
+      // Live subscription — any change anywhere updates this calendar instantly
+      firestoreDoc.onSnapshot(snap => {
+        if (snap.exists && snap.data().dates) {
+          blockedDates = new Set(snap.data().dates);
+        } else {
+          blockedDates = new Set();
+        }
+        renderCal();
+      }, err => {
+        console.warn('Firestore sync failed, falling back to localStorage:', err);
+        useFirebase = false;
+        blockedDates = loadFromLocal();
+        renderCal();
+      });
+      return;
+    } catch (e) {
+      console.warn('Firebase init failed:', e);
+    }
+  }
+  // Fallback: per-device localStorage
+  blockedDates = loadFromLocal();
+}
+
+function loadFromLocal() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? new Set(JSON.parse(raw)) : new Set();
+  } catch (e) { return new Set(); }
+}
+
+async function saveBlockedDates() {
+  if (useFirebase && firestoreDoc) {
+    try {
+      await firestoreDoc.set({ dates: [...blockedDates], updatedAt: Date.now() });
+      return;
+    } catch (e) {
+      console.error('Firestore save failed:', e);
+      alert('Could not save to cloud. Check your internet connection.');
+      return;
+    }
+  }
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([...blockedDates]));
+  } catch (e) {}
+}
+
+function calInit() {
+  const now = new Date();
+  calYear = now.getFullYear();
+  calMonth = now.getMonth();
+  if (ADMIN_MODE) showAdminBar();
+  initStorage();
+  renderCal();
+}
+
+function showAdminBar() {
+  const wrap = document.getElementById('cal-wrap');
+  const bar = document.createElement('div');
+  bar.style.cssText = 'background:rgba(227,30,36,.12);border:1px solid var(--red);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:#fff;line-height:1.5;';
+  bar.innerHTML = '🔧 <strong>ADMIN MODE</strong> — Tap any available day to block it. Tap a blocked day to unblock. Changes save automatically. <a href="book.html" style="color:#fff;text-decoration:underline;">Exit</a>';
+  wrap.insertBefore(bar, wrap.firstChild);
+}
+
+function calNav(dir) {
+  calMonth += dir;
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  if (calMonth < 0)  { calMonth = 11; calYear--; }
+  renderCal();
+}
+
+function renderCal() {
+  const nameEl = document.getElementById('cal-month-name');
+  const grid   = document.getElementById('cal-grid');
+  nameEl.textContent = MONTHS[calMonth] + ' ' + calYear;
+  grid.innerHTML = '';
+
+  // Day-of-week headers
+  ['Su','Mo','Tu','We','Th','Fr','Sa'].forEach(d => {
+    const h = document.createElement('div');
+    h.className = 'cal-dow'; h.textContent = d;
+    grid.appendChild(h);
+  });
+
+  const today    = new Date(); today.setHours(0,0,0,0);
+  // No same-day bookings — earliest bookable date is tomorrow
+  const minBookable = new Date(today); minBookable.setDate(minBookable.getDate() + 1);
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+
+  // Empty cells before 1st
+  for (let i = 0; i < firstDay; i++) {
+    const e = document.createElement('div'); e.className = 'cal-day cal-day-empty';
+    grid.appendChild(e);
+  }
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const date = new Date(calYear, calMonth, d);
+    const cell = document.createElement('div');
+    const iso  = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const past = date < minBookable;
+    const off  = DAYS_OFF.includes(date.getDay());
+    const blocked = blockedDates.has(iso);
+    const unavailable = past || off || blocked;
+
+    cell.className = 'cal-day' +
+      (unavailable ? ' cal-day-disabled' : '') +
+      (date.getTime() === today.getTime() ? ' cal-day-today' : '') +
+      (calSelected === iso ? ' cal-day-selected' : '');
+    cell.textContent = d;
+
+    if (blocked && !past) {
+      cell.title = 'Unavailable';
+      cell.style.textDecoration = 'line-through';
+    }
+
+    if (ADMIN_MODE && !past && !off) {
+      cell.style.cursor = 'pointer';
+      cell.onclick = () => toggleBlock(iso);
+    } else if (!unavailable) {
+      cell.onclick = () => selectDate(iso, d);
+    }
+    grid.appendChild(cell);
+  }
+}
+
+async function toggleBlock(iso) {
+  if (blockedDates.has(iso)) {
+    blockedDates.delete(iso);
+  } else {
+    blockedDates.add(iso);
+  }
+  renderCal();
+  await saveBlockedDates();
+}
+
+function selectDate(iso, day) {
+  calSelected = iso;
+  document.getElementById('date').value = iso;
+
+  // Format display
+  const [y, m, d] = iso.split('-');
+  const dateObj = new Date(+y, +m - 1, +d);
+  const options = { weekday: 'long', month: 'long', day: 'numeric' };
+  const friendly = dateObj.toLocaleDateString('en-US', options);
+  const disp = document.getElementById('cal-selected-display');
+  disp.textContent = '✓ ' + friendly;
+  disp.style.color = 'var(--red)';
+
+  document.getElementById('cal-wrap').classList.remove('invalid-cal');
+  renderCal();
+}
+
+// ── Time Slots ────────────────────────────────────────────────────────────────
+function selectTime(el, value) {
+  document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('time-slot-selected'));
+  el.classList.add('time-slot-selected');
+  document.getElementById('time').value = value;
+}
+
+// Init on load
+document.addEventListener('DOMContentLoaded', calInit);
 </script>
 
 </body>
