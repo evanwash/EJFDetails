@@ -143,10 +143,6 @@ h2 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(38px, 6vw, 64px); l
 .pricing-note { margin-top: 18px; font-size: 13px; color: var(--gray); font-style: italic; display: flex; align-items: center; gap: 8px; }
 .pricing-note::before { content: "✦"; color: var(--red); font-style: normal; }
 
-.deposit-notice { margin-top: 24px; background: linear-gradient(135deg, rgba(227,30,36,.08), rgba(227,30,36,.02)); border: 1px solid rgba(227,30,36,.35); border-radius: 12px; padding: 20px 24px; display: flex; align-items: flex-start; gap: 16px; }
-.deposit-icon { font-size: 28px; flex-shrink: 0; margin-top: 2px; }
-.deposit-notice h4 { font-size: 15px; font-weight: 700; color: var(--red); margin-bottom: 5px; }
-.deposit-notice p { font-size: 13px; color: rgba(255,255,255,.6); line-height: 1.6; }
 
 .tiers { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); gap: 20px; }
 .tier-card { border-radius: 16px; padding: 30px; position: relative; overflow: hidden; transition: transform .3s, box-shadow .3s; }
@@ -237,9 +233,6 @@ h2 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(38px, 6vw, 64px); l
 .form-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 @media(max-width:560px){ .form-row2 { grid-template-columns: 1fr; } }
 .form-group textarea { min-height: 90px; resize: vertical; }
-.deposit-box { background: linear-gradient(135deg, rgba(227,30,36,.1), rgba(227,30,36,.04)); border: 1px solid rgba(227,30,36,.3); border-radius: 12px; padding: 16px 20px; margin-bottom: 22px; display: flex; align-items: flex-start; gap: 14px; }
-.deposit-box p { font-size: 13px; color: rgba(255,255,255,.65); line-height: 1.5; }
-.deposit-box strong { color: var(--red); }
 .btn-book { width: 100%; padding: 16px; background: var(--white); color: var(--red); font-family: 'DM Sans', sans-serif; font-weight: 800; font-size: 15px; letter-spacing: .06em; text-transform: uppercase; border: none; border-radius: 10px; cursor: pointer; transition: background .2s, transform .15s; }
 .btn-book:hover { background: #fff; transform: translateY(-2px); }
 .booking-note { text-align: center; font-size: 12px; color: var(--gray); margin-top: 14px; }
@@ -402,7 +395,6 @@ button:focus:not(:focus-visible), a:focus:not(:focus-visible) { outline: none; }
  .float-cta { bottom: 18px; right: 18px; padding: 12px 18px; font-size: 13px; }
  h2 { margin-bottom: 24px; }
  .header-phone { font-size: 20px; }
- .deposit-notice { flex-direction: column; gap: 10px; padding: 16px; }
 }
 
 /* Smooth transition for nav background */
@@ -542,19 +534,51 @@ button:focus:not(:focus-visible), a:focus:not(:focus-visible) { outline: none; }
  </div>
  <div class="form-group"><label>Your Address / Location</label><input type="text" id="address" autocomplete="street-address" placeholder="We come to you — enter your address"></div>
  <div class="form-group"><label>Anything else we should know?</label><textarea id="notes" placeholder="Pet hair, heavy stains, special requests..."></textarea></div>
- <div class="deposit-box">
- <div style="font-size:22px;flex-shrink:0">🔒</div>
  <p><strong>Step 1:</strong> Fill out this form. <strong>Step 2:</strong> Send your <strong style="color:var(--red)">$25 deposit</strong> instantly via <a href="pay.html" style="color:var(--red);text-decoration:underline">CashApp, Venmo, Zelle, or PayPal</a> — your spot is locked the moment we receive it.</p>
  </div>
- <button class="btn-book" onclick="submitBooking()">Submit &amp; Go Pay Deposit →</button>
- <p class="booking-note">After submitting, you'll be prompted to send the $25 deposit via your preferred method.</p>
+ <button class="btn-book" onclick="submitBooking()">Confirm Booking →</button>
+ <p class="booking-note">We'll text you to confirm your appointment.</p>
  </div>
  <div class="booking-success" id="booking-success">
- <div class="check">✅</div>
- <h3>Almost locked in!</h3>
- <p>Request received! Your booking details have been sent to our team.<br><strong style="color:var(--red)">One last step:</strong> send your $25 deposit to lock in your spot.</p>
- <a href="pay.html" class="btn-book" style="display:inline-block;margin:20px auto 8px;max-width:340px;text-decoration:none;padding:16px 32px">Pay $25 Deposit Now →</a>
- <p style="font-size:13px;color:rgba(255,255,255,.45);margin-top:8px">Questions? Text <strong style="color:var(--red)">708-573-5490</strong></p>
+  <div class="check">🎉</div>
+  <h3>Thanks for choosing EJF!</h3>
+  <p>Your booking request is in — we'll text you shortly to confirm your appointment details.</p>
+
+  <div style="margin-top:28px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:24px 20px;text-align:left;">
+    <p style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.04em;color:var(--white);margin-bottom:6px;">💳 Payment — Due After the Job</p>
+    <p style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:20px;">No payment needed now. We collect after the detail is complete — pick whatever's easiest.</p>
+
+    <div class="pay-cta-grid" style="margin-top:0;">
+
+      <div class="pay-cta-card" onclick="copyZelleBook(this)" style="cursor:pointer;">
+        <div class="pay-cta-logo" style="background:#6d1ed4;color:#fff;">Z</div>
+        <div class="pay-cta-info">
+          <div class="pay-cta-name">Zelle</div>
+          <div class="pay-cta-handle" id="zelle-book-handle">708-573-5490</div>
+        </div>
+        <div class="pay-cta-arrow" id="zelle-book-arrow">Tap to Copy →</div>
+      </div>
+
+      <a class="pay-cta-card" href="https://cash.app/$EWash52" target="_blank" rel="noopener">
+        <div class="pay-cta-logo" style="background:#00d632;color:#000;">$</div>
+        <div class="pay-cta-info">
+          <div class="pay-cta-name">CashApp</div>
+          <div class="pay-cta-handle">$EWash52</div>
+        </div>
+        <div class="pay-cta-arrow">Tap to Pay →</div>
+      </a>
+
+    </div>
+
+    <div class="pay-also-accept" style="margin-top:18px;">
+      <span class="pay-also-label" style="font-size:12px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.06em;">Also accepted:</span>
+      <span class="pay-also-chip" style="background:rgba(255,255,255,.07);border-radius:50px;padding:5px 14px;font-size:13px;">💵 Cash</span>
+      <span class="pay-also-chip" style="background:rgba(255,255,255,.07);border-radius:50px;padding:5px 14px;font-size:13px;">🍎 Apple Pay</span>
+      <span class="pay-also-chip" style="background:rgba(255,255,255,.07);border-radius:50px;padding:5px 14px;font-size:13px;">🔵 Google Pay</span>
+    </div>
+  </div>
+
+  <p style="font-size:13px;color:rgba(255,255,255,.35);margin-top:20px;">Questions? Text <strong style="color:var(--red)">708-573-5490</strong></p>
  </div>
  </div>
 </section>
@@ -624,6 +648,19 @@ if (params.get('vehicle')) {
  const val = params.get('vehicle');
  for (let o of vehSelect.options) {
   if (o.textContent.startsWith(val) || o.value === val) { o.selected = true; break; }
+ }
+}
+
+function copyZelleBook(card) {
+ const arrow = document.getElementById('zelle-book-arrow');
+ if (navigator.clipboard) {
+  navigator.clipboard.writeText('708-573-5490').then(() => {
+   arrow.textContent = 'Copied! ✓';
+   card.style.borderColor = 'var(--red)';
+   setTimeout(() => { arrow.textContent = 'Tap to Copy →'; card.style.borderColor = ''; }, 2500);
+  });
+ } else {
+  alert('Zelle number: 708-573-5490');
  }
 }
 
