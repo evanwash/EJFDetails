@@ -137,7 +137,8 @@ h2 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(38px, 6vw, 64px); l
 .vehicle-content h3 { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: .04em; margin-bottom: 2px; }
 .price-details { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; max-height: 0; opacity: 0; overflow: hidden; transition: max-height .35s ease, opacity .35s ease, margin-top .35s; }
 .card.vehicle:hover .price-details, .card.vehicle.tapped .price-details { max-height: 120px; opacity: 1; margin-top: 12px; }
-.price-item { background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); backdrop-filter: blur(6px); border-radius: 8px; padding: 10px 12px; }
+.price-item { background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); backdrop-filter: blur(6px); border-radius: 8px; padding: 10px 12px; cursor: pointer; transition: border-color .2s, transform .15s, background .2s; }
+.price-item:hover { border-color: var(--red); background: rgba(227,30,36,.15); transform: translateY(-2px); }
 .price-item .type { color: var(--gray); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
 .price-item.full-detail { border-color: var(--red); background: rgba(227,30,36,.12); }
 .price-item.full-detail .type { color: var(--red); }
@@ -488,9 +489,9 @@ button:focus:not(:focus-visible), a:focus:not(:focus-visible) { outline: none; }
  <div class="vehicle-content">
  <h3>Regular</h3>
  <div class="price-details">
- <div class="price-item"><div class="type">Exterior</div><div class="amount">$40</div></div>
- <div class="price-item"><div class="type">Interior</div><div class="amount">$100</div></div>
- <div class="price-item full-detail"><div class="type">Full Detail</div><div class="amount">$125</div></div>
+ <div class="price-item" onclick="bookFromPrice('Regular (Sedan, Coupe, Small Car)', 'Exterior Only', event)"><div class="type">Exterior</div><div class="amount">$40</div></div>
+ <div class="price-item" onclick="bookFromPrice('Regular (Sedan, Coupe, Small Car)', 'Interior Only', event)"><div class="type">Interior</div><div class="amount">$100</div></div>
+ <div class="price-item full-detail" onclick="bookFromPrice('Regular (Sedan, Coupe, Small Car)', 'Interior + Exterior', event)"><div class="type">Full Detail</div><div class="amount">$125</div></div>
  </div>
  </div>
  </div>
@@ -505,9 +506,9 @@ button:focus:not(:focus-visible), a:focus:not(:focus-visible) { outline: none; }
  <div class="vehicle-content">
  <h3>SUV</h3>
  <div class="price-details">
- <div class="price-item"><div class="type">Exterior</div><div class="amount">$50</div></div>
- <div class="price-item"><div class="type">Interior</div><div class="amount">$130</div></div>
- <div class="price-item full-detail"><div class="type">Full Detail</div><div class="amount">$160</div></div>
+ <div class="price-item" onclick="bookFromPrice('SUV (Crossover, Mid-Size SUV)', 'Exterior Only', event)"><div class="type">Exterior</div><div class="amount">$50</div></div>
+ <div class="price-item" onclick="bookFromPrice('SUV (Crossover, Mid-Size SUV)', 'Interior Only', event)"><div class="type">Interior</div><div class="amount">$130</div></div>
+ <div class="price-item full-detail" onclick="bookFromPrice('SUV (Crossover, Mid-Size SUV)', 'Interior + Exterior', event)"><div class="type">Full Detail</div><div class="amount">$160</div></div>
  </div>
  </div>
  </div>
@@ -522,9 +523,9 @@ button:focus:not(:focus-visible), a:focus:not(:focus-visible) { outline: none; }
  <div class="vehicle-content">
  <h3>Large</h3>
  <div class="price-details">
- <div class="price-item"><div class="type">Exterior</div><div class="amount">$60</div></div>
- <div class="price-item"><div class="type">Interior</div><div class="amount">$165</div></div>
- <div class="price-item full-detail"><div class="type">Full Detail</div><div class="amount">$200</div></div>
+ <div class="price-item" onclick="bookFromPrice('Large (Full-Size SUV, Truck, Van)', 'Exterior Only', event)"><div class="type">Exterior</div><div class="amount">$60</div></div>
+ <div class="price-item" onclick="bookFromPrice('Large (Full-Size SUV, Truck, Van)', 'Interior Only', event)"><div class="type">Interior</div><div class="amount">$165</div></div>
+ <div class="price-item full-detail" onclick="bookFromPrice('Large (Full-Size SUV, Truck, Van)', 'Interior + Exterior', event)"><div class="type">Full Detail</div><div class="amount">$200</div></div>
  </div>
  </div>
  </div>
@@ -539,9 +540,9 @@ button:focus:not(:focus-visible), a:focus:not(:focus-visible) { outline: none; }
  <div class="vehicle-content">
  <h3>Luxury / Exotic</h3>
  <div class="price-details">
- <div class="price-item"><div class="type">Exterior</div><div class="amount">$80</div></div>
- <div class="price-item"><div class="type">Interior</div><div class="amount">$200</div></div>
- <div class="price-item full-detail"><div class="type">Full Detail</div><div class="amount">$250</div></div>
+ <div class="price-item" onclick="bookFromPrice('Luxury / Exotic', 'Exterior Only', event)"><div class="type">Exterior</div><div class="amount">$80</div></div>
+ <div class="price-item" onclick="bookFromPrice('Luxury / Exotic', 'Interior Only', event)"><div class="type">Interior</div><div class="amount">$200</div></div>
+ <div class="price-item full-detail" onclick="bookFromPrice('Luxury / Exotic', 'Interior + Exterior', event)"><div class="type">Full Detail</div><div class="amount">$250</div></div>
  </div>
  </div>
  </div>
@@ -652,5 +653,12 @@ document.addEventListener('click', function(e) {
 </script>
 
 
+<script>
+function bookFromPrice(vehicle, pkg, e) {
+  if (e) e.stopPropagation();
+  const params = new URLSearchParams({ vehicle, pkg });
+  window.location.href = 'book.html?' + params.toString();
+}
+</script>
 </body>
 </html>
