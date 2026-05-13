@@ -1,9 +1,9 @@
 name: Claude Site Editor
- 
+
 on:
   issues:
     types: [labeled]
- 
+
 jobs:
   claude-edit:
     if: github.event.label.name == 'site-edit'
@@ -12,19 +12,19 @@ jobs:
       contents: write
       pull-requests: write
       issues: write
- 
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
- 
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
- 
+
       - name: Install dependencies
         run: pip install requests
- 
+
       - name: Run Claude Edit
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -37,87 +37,132 @@ jobs:
           import json
           import requests
           import re
- 
+          import time
+
           api_key = os.environ["ANTHROPIC_API_KEY"]
           issue_title = os.environ.get("ISSUE_TITLE", "")
-          issue_body = os.environ.get("ISSUE_BODY", "")
+          issue_body = os.environ.get("ISSUE_BODY", "") or ""
           issue_number = os.environ.get("ISSUE_NUMBER", "")
- 
-          # Read all HTML files
-          site_files = {}
-          for filename in ["index.html", "pricing.html", "book.html", "pay.html", "plans.html"]:
+
+          request_text = (issue_title + " " + issue_body).lower()
+
+          # Figure out which file(s) to send based on keywords
+          file_keywords = {
+              "pricing.html": ["price", "pricing", "cost", "package", "rate", "discount", "special", "deal"],
+              "book.html": ["book", "booking", "schedule", "appointment", "calendar", "reserve"],
+              "pay.html": ["pay", "payment", "checkout", "square", "invoice"],
+              "plans.html": ["plan", "subscription", "membership", "monthly", "recurring"],
+              "index.html": ["home", "hero", "banner", "phone", "number", "contact", "about", "testimonial", "review", "header", "footer", "nav", "logo", "welcome"],
+          }
+
+          # Score each file
+          scores = {}
+          for filename, keywords in file_keywords.items():
+              score = sum(1 for kw in keywords if kw in request_text)
+              scores[filename] = score
+
+          # Pick the best match, default to index.html
+          best_file = max(scores, key=scores.get)
+          if scores[best_file] == 0:
+              best_file = "index.html"
+
+          # Check if user explicitly named a file
+          all_files = ["index.html", "pricing.html", "book.html", "pay.html", "plans.html"]
+          explicitly_named = [f for f in all_files if f in request_text]
+          if explicitly_named:
+              target_files = explicitly_named
+          else:
+              target_files = [best_file]
+
+          # If the request seems global (nav, header, footer, all pages), include index only
+          # User can specify "all pages" in body to target everything
+          if "all pages" in request_text or "every page" in request_text:
+              target_files = all_files
+
+          print(f"Target files: {target_files}")
+
+          # Read only the target files
+          files_content = ""
+          for filename in target_files:
               filepath = os.path.join(os.getcwd(), filename)
               if os.path.exists(filepath):
                   with open(filepath, "r", encoding="utf-8") as f:
-                      site_files[filename] = f.read()
- 
-          # Build file content string
-          files_content = ""
-          for name, content in site_files.items():
-              files_content += f"=== FILE: {name} ===\n{content}\n\n"
- 
-          # Build prompt
-          prompt = f"""You are a web developer editing an existing website. The user wants the following change:
- 
+                      files_content += f"=== FILE: {filename} ===\n{f.read()}\n\n"
+
+          prompt = f"""You are a web developer editing an existing website. The user wants this change:
+
           TITLE: {issue_title}
           DESCRIPTION: {issue_body}
- 
-          Here are the current site files:
- 
+
+          Here are the site files to edit:
+
           {files_content}
- 
-          IMPORTANT INSTRUCTIONS:
-          - Only modify the file(s) that need to change
-          - Keep the existing design system (dark theme, #e31e24 red accents, Bebas Neue headings, DM Sans body text)
-          - Return ONLY the modified files in this exact format with no other text:
- 
+
+          INSTRUCTIONS:
+          - Only modify what the user asked for
+          - Keep the existing design (dark theme, #e31e24 red, Bebas Neue headings, DM Sans body)
+          - Return ONLY modified files in this exact format:
+
           --- FILE: filename.html ---
           (full file content here)
           --- END FILE ---
- 
-          If multiple files need changes, repeat the format for each file.
+
           Do NOT include files that don't need changes."""
- 
-          # Call Claude API
-          response = requests.post(
-              "https://api.anthropic.com/v1/messages",
-              headers={
-                  "Content-Type": "application/json",
-                  "x-api-key": api_key,
-                  "anthropic-version": "2023-06-01",
-              },
-              json={
-                  "model": "claude-sonnet-4-20250514",
-                  "max_tokens": 16000,
-                  "messages": [{"role": "user", "content": prompt}],
-              },
-              timeout=120,
-          )
- 
-          data = response.json()
- 
+
+          # Call Claude API with retry for rate limits
+          max_retries = 3
+          for attempt in range(max_retries):
+              response = requests.post(
+                  "https://api.anthropic.com/v1/messages",
+                  headers={
+                      "Content-Type": "application/json",
+                      "x-api-key": api_key,
+                      "anthropic-version": "2023-06-01",
+                  },
+                  json={
+                      "model": "claude-sonnet-4-20250514",
+                      "max_tokens": 16000,
+                      "messages": [{"role": "user", "content": prompt}],
+                  },
+                  timeout=120,
+              )
+
+              data = response.json()
+
+              if data.get("type") == "error" and "rate_limit" in data.get("error", {}).get("type", ""):
+                  if attempt < max_retries - 1:
+                      wait_time = 60 * (attempt + 1)
+                      print(f"Rate limited. Waiting {wait_time}s before retry...")
+                      time.sleep(wait_time)
+                      continue
+                  else:
+                      print("Error: Rate limited after all retries")
+                      print(json.dumps(data, indent=2))
+                      exit(1)
+              break
+
           if "content" not in data or not data["content"]:
               print("Error: No response from Claude API")
               print(json.dumps(data, indent=2))
               exit(1)
- 
+
           content = data["content"][0].get("text", "")
- 
+
           if not content:
               print("Error: Empty response")
               exit(1)
- 
+
           # Parse response and extract files
           pattern = r'--- FILE: (\S+) ---\n(.*?)--- END FILE ---'
           matches = re.findall(pattern, content, re.DOTALL)
- 
+
           if not matches:
               print("Warning: Could not parse file changes from response")
               print(content[:500])
               with open("/tmp/no_changes.flag", "w") as f:
                   f.write("true")
               exit(0)
- 
+
           changed_files = []
           for filename, file_content in matches:
               filename = filename.strip()
@@ -126,13 +171,13 @@ jobs:
                   f.write(file_content)
               changed_files.append(filename)
               print(f"Updated: {filename}")
- 
+
           with open("/tmp/changed_files.txt", "w") as f:
               f.write(" ".join(changed_files))
- 
+
           print(f"Successfully updated {len(changed_files)} file(s)")
           PYTHON_SCRIPT
- 
+
       - name: Create Pull Request
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -142,18 +187,18 @@ jobs:
               --body "⚠️ Claude couldn't determine which files to change. Try being more specific in your request."
             exit 0
           fi
- 
+
           if [ ! -f /tmp/changed_files.txt ]; then
             echo "No changes file found"
             exit 1
           fi
- 
+
           CHANGED=$(cat /tmp/changed_files.txt)
           if [ -z "$CHANGED" ]; then
             echo "No files were changed"
             exit 0
           fi
- 
+
           BRANCH="site-edit/issue-${{ github.event.issue.number }}"
           git config user.name "Claude Site Editor"
           git config user.email "claude-bot@ejfdetailing.com"
@@ -161,21 +206,21 @@ jobs:
           git add -A
           git commit -m "Site edit: ${{ github.event.issue.title }} (Issue #${{ github.event.issue.number }})"
           git push origin "$BRANCH"
- 
+
           gh pr create \
             --title "Site Edit: ${{ github.event.issue.title }}" \
             --body "## Automated Site Edit
- 
+
           **Request:** ${{ github.event.issue.title }}
- 
+
           **Issue:** #${{ github.event.issue.number }}
- 
+
           **Files changed:** ${CHANGED}
- 
+
           ---
           *Review the changes below, then merge to deploy via GitHub Pages.*" \
             --base main \
             --head "$BRANCH"
- 
+
           gh issue comment ${{ github.event.issue.number }} \
             --body "✅ A pull request has been created with your requested changes. Review and merge it to deploy."
