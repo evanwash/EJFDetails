@@ -1,9 +1,9 @@
 name: Claude Site Editor
-
+ 
 on:
   issues:
     types: [labeled]
-
+ 
 jobs:
   claude-edit:
     if: github.event.label.name == 'site-edit'
@@ -12,117 +12,148 @@ jobs:
       contents: write
       pull-requests: write
       issues: write
-
+ 
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-
-      - name: Read site files
-        id: read-files
-        run: |
-          {
-            echo "FILES_CONTENT<<ENDOFFILES"
-            for file in index.html pricing.html book.html pay.html plans.html; do
-              if [ -f "$file" ]; then
-                echo "=== FILE: $file ==="
-                cat "$file"
-                echo ""
-              fi
-            done
-            echo "ENDOFFILES"
-          } >> "$GITHUB_OUTPUT"
-
-      - name: Call Claude API
-        id: claude
+ 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+ 
+      - name: Install dependencies
+        run: pip install requests
+ 
+      - name: Run Claude Edit
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
-          ISSUE_TITLE="${{ github.event.issue.title }}"
-          ISSUE_BODY=$(cat <<'ISSUEBODY'
-          ${{ github.event.issue.body }}
-          ISSUEBODY
-          )
-
-          # Build the prompt
-          PROMPT=$(cat <<PROMPT_END
-          You are a web developer editing an existing website. The user wants the following change:
-
-          TITLE: ${ISSUE_TITLE}
-          DESCRIPTION: ${ISSUE_BODY}
-
+          python3 << 'PYTHON_SCRIPT'
+          import os
+          import json
+          import requests
+          import re
+ 
+          api_key = os.environ["ANTHROPIC_API_KEY"]
+          issue_title = os.environ.get("ISSUE_TITLE", "")
+          issue_body = os.environ.get("ISSUE_BODY", "")
+          issue_number = os.environ.get("ISSUE_NUMBER", "")
+ 
+          # Read all HTML files
+          site_files = {}
+          for filename in ["index.html", "pricing.html", "book.html", "pay.html", "plans.html"]:
+              filepath = os.path.join(os.getcwd(), filename)
+              if os.path.exists(filepath):
+                  with open(filepath, "r", encoding="utf-8") as f:
+                      site_files[filename] = f.read()
+ 
+          # Build file content string
+          files_content = ""
+          for name, content in site_files.items():
+              files_content += f"=== FILE: {name} ===\n{content}\n\n"
+ 
+          # Build prompt
+          prompt = f"""You are a web developer editing an existing website. The user wants the following change:
+ 
+          TITLE: {issue_title}
+          DESCRIPTION: {issue_body}
+ 
           Here are the current site files:
-
-          ${{ steps.read-files.outputs.FILES_CONTENT }}
-
+ 
+          {files_content}
+ 
           IMPORTANT INSTRUCTIONS:
           - Only modify the file(s) that need to change
           - Keep the existing design system (dark theme, #e31e24 red accents, Bebas Neue headings, DM Sans body text)
           - Return ONLY the modified files in this exact format with no other text:
-
+ 
           --- FILE: filename.html ---
           (full file content here)
           --- END FILE ---
-
+ 
           If multiple files need changes, repeat the format for each file.
-          Do NOT include files that don't need changes.
-          PROMPT_END
-          )
-
+          Do NOT include files that don't need changes."""
+ 
           # Call Claude API
-          RESPONSE=$(curl -s https://api.anthropic.com/v1/messages \
-            -H "Content-Type: application/json" \
-            -H "x-api-key: ${ANTHROPIC_API_KEY}" \
-            -H "anthropic-version: 2023-06-01" \
-            -d "$(jq -n \
-              --arg prompt "$PROMPT" \
-              '{
-                model: "claude-sonnet-4-20250514",
-                max_tokens: 16000,
-                messages: [{role: "user", content: $prompt}]
-              }')")
-
-          # Extract the text content
-          CONTENT=$(echo "$RESPONSE" | jq -r '.content[0].text // empty')
-
-          if [ -z "$CONTENT" ]; then
-            echo "Error: No response from Claude API"
-            echo "$RESPONSE" | jq .
-            exit 1
-          fi
-
-          # Save response to file for processing
-          echo "$CONTENT" > /tmp/claude_response.txt
-
-      - name: Apply changes
-        id: apply
-        run: |
-          RESPONSE_FILE="/tmp/claude_response.txt"
-          CHANGED_FILES=""
-
-          # Parse the response and extract files
-          current_file=""
-          while IFS= read -r line; do
-            if [[ "$line" =~ ^---\ FILE:\ (.+)\ ---$ ]]; then
-              current_file="${BASH_REMATCH[1]}"
-              > "/tmp/new_${current_file}"
-            elif [[ "$line" =~ ^---\ END\ FILE\ ---$ ]]; then
-              if [ -n "$current_file" ]; then
-                cp "/tmp/new_${current_file}" "./${current_file}"
-                CHANGED_FILES="${CHANGED_FILES} ${current_file}"
-              fi
-              current_file=""
-            elif [ -n "$current_file" ]; then
-              echo "$line" >> "/tmp/new_${current_file}"
-            fi
-          done < "$RESPONSE_FILE"
-
-          echo "changed_files=${CHANGED_FILES}" >> "$GITHUB_OUTPUT"
-
+          response = requests.post(
+              "https://api.anthropic.com/v1/messages",
+              headers={
+                  "Content-Type": "application/json",
+                  "x-api-key": api_key,
+                  "anthropic-version": "2023-06-01",
+              },
+              json={
+                  "model": "claude-sonnet-4-20250514",
+                  "max_tokens": 16000,
+                  "messages": [{"role": "user", "content": prompt}],
+              },
+              timeout=120,
+          )
+ 
+          data = response.json()
+ 
+          if "content" not in data or not data["content"]:
+              print("Error: No response from Claude API")
+              print(json.dumps(data, indent=2))
+              exit(1)
+ 
+          content = data["content"][0].get("text", "")
+ 
+          if not content:
+              print("Error: Empty response")
+              exit(1)
+ 
+          # Parse response and extract files
+          pattern = r'--- FILE: (\S+) ---\n(.*?)--- END FILE ---'
+          matches = re.findall(pattern, content, re.DOTALL)
+ 
+          if not matches:
+              print("Warning: Could not parse file changes from response")
+              print(content[:500])
+              with open("/tmp/no_changes.flag", "w") as f:
+                  f.write("true")
+              exit(0)
+ 
+          changed_files = []
+          for filename, file_content in matches:
+              filename = filename.strip()
+              file_content = file_content.strip() + "\n"
+              with open(filename, "w", encoding="utf-8") as f:
+                  f.write(file_content)
+              changed_files.append(filename)
+              print(f"Updated: {filename}")
+ 
+          with open("/tmp/changed_files.txt", "w") as f:
+              f.write(" ".join(changed_files))
+ 
+          print(f"Successfully updated {len(changed_files)} file(s)")
+          PYTHON_SCRIPT
+ 
       - name: Create Pull Request
-        if: steps.apply.outputs.changed_files != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          if [ -f /tmp/no_changes.flag ]; then
+            gh issue comment ${{ github.event.issue.number }} \
+              --body "⚠️ Claude couldn't determine which files to change. Try being more specific in your request."
+            exit 0
+          fi
+ 
+          if [ ! -f /tmp/changed_files.txt ]; then
+            echo "No changes file found"
+            exit 1
+          fi
+ 
+          CHANGED=$(cat /tmp/changed_files.txt)
+          if [ -z "$CHANGED" ]; then
+            echo "No files were changed"
+            exit 0
+          fi
+ 
           BRANCH="site-edit/issue-${{ github.event.issue.number }}"
           git config user.name "Claude Site Editor"
           git config user.email "claude-bot@ejfdetailing.com"
@@ -130,29 +161,21 @@ jobs:
           git add -A
           git commit -m "Site edit: ${{ github.event.issue.title }} (Issue #${{ github.event.issue.number }})"
           git push origin "$BRANCH"
-
+ 
           gh pr create \
             --title "Site Edit: ${{ github.event.issue.title }}" \
             --body "## Automated Site Edit
-
+ 
           **Request:** ${{ github.event.issue.title }}
-
+ 
           **Issue:** #${{ github.event.issue.number }}
-
-          **Files changed:**${{ steps.apply.outputs.changed_files }}
-
+ 
+          **Files changed:** ${CHANGED}
+ 
           ---
-          *Review the changes below, then merge to deploy via Netlify.*" \
+          *Review the changes below, then merge to deploy via GitHub Pages.*" \
             --base main \
             --head "$BRANCH"
-
+ 
           gh issue comment ${{ github.event.issue.number }} \
             --body "✅ A pull request has been created with your requested changes. Review and merge it to deploy."
-
-      - name: Comment if no changes
-        if: steps.apply.outputs.changed_files == ''
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh issue comment ${{ github.event.issue.number }} \
-            --body "⚠️ Claude couldn't determine which files to change. Try being more specific in your request."
